@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Winflex — Clamshells</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --bg:#0d1117;--surf:#161b22;--surf2:#1e2530;--surf3:#252d3a;
+  --border:#2a3441;--border2:#3a4656;
+  --text:#e6edf3;--text2:#8b949e;--text3:#484f58;
+  --blue:#58a6ff;--blue-dim:#1c3a5e;
+  --green:#3fb950;--green-dim:#0d2a14;
+  --yellow:#e3b341;--yellow-dim:#2d2008;
+  --red:#f85149;--red-dim:#3a0d0b;
+  --r:12px;--r-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow-x:hidden}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px}
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.on{display:flex}
+
+/* HEADER */
+.hdr{background:var(--surf);border-bottom:1px solid var(--border);padding:13px 18px;
+  display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.hdr-brand{display:flex;align-items:center;gap:10px}
+.hdr-mark{width:30px;height:30px;background:var(--blue);border-radius:7px;
+  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#0d1117}
+.hdr-title{font-size:14px;font-weight:600}
+.hdr-sub{font-size:11px;color:var(--text2);margin-top:1px}
+
+/* BODY */
+.body{flex:1;padding:16px;overflow-y:auto;padding-bottom:32px}
+
+/* CARD */
+.card{background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-bottom:14px;}
+.card-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text2);margin-bottom:14px;}
+
+/* FIELDS */
+.field{margin-bottom:13px}
+.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:6px;}
+.field input,.field select,.field textarea{width:100%;background:var(--surf2);border:1px solid var(--border2);
+  border-radius:var(--r-sm);color:var(--text);font-family:inherit;font-size:16px;padding:11px 13px;
+  outline:none;transition:border-color .15s;-webkit-appearance:none;appearance:none;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue)}
+.field textarea{resize:none;height:72px;line-height:1.5}
+.field .hint{font-size:11px;color:var(--text3);margin-top:4px;min-height:15px}
+.field .hint.ok{color:var(--green)}
+.field .hint.warn{color:var(--yellow)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.mt{margin-top:12px}
+
+/* OPERARIOS */
+.op-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.op-btn{background:var(--surf2);border:1px solid var(--border2);border-radius:var(--r-sm);
+  color:var(--text2);font-family:inherit;font-size:13px;padding:12px 8px;text-align:center;
+  cursor:pointer;transition:all .15s;line-height:1.3;}
+.op-btn.sel{background:var(--blue-dim);border-color:var(--blue);color:var(--blue);font-weight:600}
+
+/* TURNO */
+.turno-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.turno-btn{background:var(--surf2);border:1px solid var(--border2);border-radius:var(--r-sm);
+  color:var(--text2);font-family:inherit;font-size:13px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .15s;}
+.turno-btn.sel{background:var(--blue-dim);border-color:var(--blue);color:var(--blue);font-weight:600}
+
+/* PRODUCTO */
+.prod-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.prod-btn{background:var(--surf2);border:1px solid var(--border2);border-radius:var(--r-sm);
+  color:var(--text2);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;
+  padding:13px 4px;text-align:center;cursor:pointer;transition:all .15s;}
+.prod-btn.sel{background:var(--blue-dim);border-color:var(--blue);color:var(--blue)}
+
+/* NUM INPUT */
+.num-wrap{display:flex;align-items:center;background:var(--surf2);border:1px solid var(--border2);border-radius:var(--r-sm);overflow:hidden;}
+.num-wrap:focus-within{border-color:var(--blue)}
+.num-btn{background:none;border:none;color:var(--text2);font-size:22px;width:46px;height:48px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.num-btn:active{background:var(--border)}
+.num-in{flex:1;background:transparent;border:none!important;text-align:center;
+  font-family:'IBM Plex Mono',monospace;font-size:19px;font-weight:600;color:var(--text);
+  padding:0;outline:none;-moz-appearance:textfield;}
+.num-in::-webkit-outer-spin-button,.num-in::-webkit-inner-spin-button{-webkit-appearance:none}
+
+/* BUTTONS */
+.btn{width:100%;padding:14px;border:none;border-radius:var(--r-sm);font-family:inherit;
+  font-size:15px;font-weight:600;cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn:active{transform:scale(.98)}
+.btn-blue{background:var(--blue);color:#0d1117}
+.btn-green{background:var(--green);color:#0d1117}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text2)}
+.btn-danger{background:var(--red-dim);border:1px solid var(--red);color:var(--red)}
+.btn-sm{padding:9px 14px;font-size:13px;width:auto}
+
+/* TOTALS */
+.totals{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.tot{background:var(--surf);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;text-align:center;}
+.tot-val{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:700;color:var(--text)}
+.tot-val.g{color:var(--green)}
+.tot-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:3px}
+
+/* PREVIEW CAJAS */
+.cajas-preview{background:var(--green-dim);border:1px solid var(--green);border-radius:var(--r-sm);
+  padding:11px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;}
+.cajas-preview-val{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:700;color:var(--green)}
+
+/* BOBINA LIST */
+.bob-item{background:var(--surf);border:1px solid var(--border);border-radius:var(--r-sm);
+  padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px;}
+.bob-num{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);min-width:22px;padding-top:2px;}
+.bob-body{flex:1}
+.bob-top{display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}
+.bob-prod{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:700;color:var(--blue)}
+.bob-sub{font-size:12px;color:var(--text2)}
+.bob-stats{display:flex;gap:14px;flex-wrap:wrap}
+.bob-stat{font-size:12px;color:var(--text2)}
+.bob-stat strong{font-family:'IBM Plex Mono',monospace;color:var(--text);font-size:13px}
+.bob-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:2px;flex-shrink:0}
+.bob-del:hover{color:var(--red)}
+
+/* HERO */
+.hero{text-align:center;padding:28px 0 20px}
+.hero h1{font-size:24px;font-weight:700;margin-bottom:6px}
+.hero p{font-size:13px;color:var(--text2)}
+.auto-badge{display:inline-flex;align-items:center;gap:6px;background:var(--green-dim);
+  border:1px solid var(--green);color:var(--green);padding:5px 12px;border-radius:20px;
+  font-size:12px;font-weight:600;margin-top:10px;}
+
+/* RESUMEN */
+.res-table{width:100%;border-collapse:collapse;font-size:12px}
+.res-table th{background:var(--surf2);padding:8px 8px;text-align:left;
+  font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--text2);border-bottom:1px solid var(--border);}
+.res-table td{padding:8px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+.res-table tr:last-child td{border-bottom:none}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-blue{background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue)}
+
+/* EMPTY */
+.empty{text-align:center;padding:28px 16px;color:var(--text3)}
+.empty-icon{font-size:36px;margin-bottom:8px}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(70px);
+  background:var(--green);color:#0d1117;padding:11px 20px;border-radius:20px;
+  font-size:13px;font-weight:700;z-index:999;transition:transform .25s ease;white-space:nowrap;}
+.toast.on{transform:translateX(-50%) translateY(0)}
+.toast.warn{background:var(--yellow);color:#1a1000}
+.toast.err{background:var(--red);color:#fff}
+
+.mono{font-family:'IBM Plex Mono',monospace}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- ════════════════════ SCREEN 0: INICIO TURNO ════════════════════ -->
+<div class="screen on" id="sc-inicio">
+  <div class="hdr">
+    <div class="hdr-brand">
+      <div class="hdr-mark">W</div>
+      <div><div class="hdr-title">Winflex Clamshells</div>
+           <div class="hdr-sub" id="hdr-fecha-hoy">—</div></div>
+    </div>
+  </div>
+  <div class="body">
+    <div class="hero">
+      <h1>🫐 Inicio de turno</h1>
+      <p>Completá los datos del turno antes de cargar bobinas</p>
+      <div class="auto-badge" id="turno-auto-lbl">🕐 Detectando turno...</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Fecha y turno</div>
+      <div class="field">
+        <label>Fecha</label>
+        <input type="date" id="in-fecha">
+      </div>
+      <div class="field">
+        <label>Turno</label>
+        <div class="turno-grid">
+          <button class="turno-btn" id="tb-M1" onclick="selTurno('M1')">🌅 M1<span style="display:block;font-size:10px;opacity:.7;margin-top:2px">07–16</span></button>
+          <button class="turno-btn" id="tb-M2" onclick="selTurno('M2')">☀️ M2<span style="display:block;font-size:10px;opacity:.7;margin-top:2px">07–19</span></button>
+          <button class="turno-btn" id="tb-N"  onclick="selTurno('N')">🌙 N<span style="display:block;font-size:10px;opacity:.7;margin-top:2px">19–07</span></button>
+        </div>
+      </div>
+      <div class="g2 mt">
+        <div class="field"><label>Hora inicio</label><input type="time" id="in-h-ini"></div>
+        <div class="field"><label>Hora fin (est.)</label><input type="time" id="in-h-fin"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Operarios del turno</div>
+      <div class="op-grid" id="op-grid"></div>
+      <div id="op-sel-wrap" style="margin-top:10px;min-height:10px"></div>
+    </div>
+
+    <button class="btn btn-blue" onclick="irProduccion()">Iniciar producción →</button>
+  </div>
+</div>
+
+<!-- ════════════════════ SCREEN 1: CARGA BOBINAS ════════════════════ -->
+<div class="screen" id="sc-prod">
+  <div class="hdr">
+    <div class="hdr-brand">
+      <div class="hdr-mark">W</div>
+      <div><div class="hdr-title">Carga de bobinas</div>
+           <div class="hdr-sub" id="hdr-turno-info">—</div></div>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="irInicio()" style="width:auto">← Turno</button>
+  </div>
+  <div class="body">
+
+    <div class="totals" style="grid-template-columns:repeat(4,1fr)">
+      <div class="tot"><div class="tot-val" id="tot-bob">0</div><div class="tot-lbl">Bobinas</div></div>
+      <div class="tot"><div class="tot-val g" id="tot-cajas">0</div><div class="tot-lbl">Cajas</div></div>
+      <div class="tot"><div class="tot-val" id="tot-pallets">0</div><div class="tot-lbl">Pallets</div></div>
+      <div class="tot"><div class="tot-val" id="tot-uds">0</div><div class="tot-lbl">Unidades</div></div>
+    </div>
+    <!-- Eficiencia en tiempo real -->
+    <div id="efic-bar" style="display:none;background:var(--surf);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 16px;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text2)">Eficiencia del turno</span>
+        <span class="mono" style="font-size:20px;font-weight:700" id="efic-pct">—</span>
+      </div>
+      <div style="background:var(--surf2);border-radius:4px;height:8px;overflow:hidden">
+        <div id="efic-fill" style="height:100%;border-radius:4px;background:var(--green);width:0%;transition:width .4s ease"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px">
+        <span style="font-size:11px;color:var(--text3)" id="efic-prod-lbl">—</span>
+        <span style="font-size:11px;color:var(--text3)" id="efic-obj-lbl">—</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Registrar bobina</div>
+
+      <!-- Producto -->
+      <div class="field">
+        <label>Producto</label>
+        <div class="prod-grid" id="prod-grid"></div>
+      </div>
+
+      <!-- N° bobina y partida -->
+      <div class="g2 mt">
+        <div class="field">
+          <label>N° Bobina</label>
+          <input type="text" id="in-nbob" placeholder="Ej: 4521" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label>Partida PET</label>
+          <input type="text" id="in-partida" placeholder="Ej: 2045" inputmode="numeric">
+        </div>
+      </div>
+
+      <!-- Kg y metros de la etiqueta -->
+      <div class="g2">
+        <div class="field">
+          <label>Kg bobina</label>
+          <input type="number" id="in-kg" placeholder="0.0" inputmode="decimal" step="0.1">
+          <div class="hint">De la etiqueta de la bobina</div>
+        </div>
+        <div class="field">
+          <label>Metros bobina</label>
+          <input type="number" id="in-metros" placeholder="0" inputmode="numeric">
+          <div class="hint">De la etiqueta de la bobina</div>
+        </div>
+      </div>
+
+      <!-- Cajas -->
+      <div class="g2">
+        <div class="field">
+          <label>Caja inicio</label>
+          <input type="number" id="in-cini" placeholder="—" inputmode="numeric">
+          <div class="hint" id="hint-cini"></div>
+        </div>
+        <div class="field">
+          <label>Caja fin</label>
+          <input type="number" id="in-cfin" placeholder="—" inputmode="numeric">
+          <div class="hint" id="hint-cfin"></div>
+        </div>
+      </div>
+
+      <!-- Preview cajas (aparece sola) -->
+      <div id="preview-cajas" style="display:none" class="cajas-preview">
+        <span style="font-size:13px;color:var(--green)">📦 Cajas esta bobina</span>
+        <span class="cajas-preview-val" id="preview-cajas-val">—</span>
+      </div>
+
+      <!-- U×Pallet -->
+      <div class="field">
+        <label>U × Pallet</label>
+        <div class="num-wrap">
+          <button class="num-btn" onclick="adj('in-uxp',-100)">−</button>
+          <input class="num-in" type="number" id="in-uxp" value="1000" min="1">
+          <button class="num-btn" onclick="adj('in-uxp',+100)">+</button>
+        </div>
+        <div class="hint" id="hint-uxp"></div>
+      </div>
+
+      <!-- Obs -->
+      <div class="field">
+        <label>Observaciones (opcional)</label>
+        <textarea id="in-obs" placeholder="Paradas, roturas, incidentes..."></textarea>
+      </div>
+
+      <button class="btn btn-blue mt" onclick="agregarBobina()">+ Agregar bobina</button>
+    </div>
+
+    <!-- Lista bobinas -->
+    <div class="card">
+      <div class="card-title">Bobinas del turno</div>
+      <div id="bob-list">
+        <div class="empty"><div class="empty-icon">🧵</div><p style="font-size:13px">Todavía no hay bobinas</p></div>
+      </div>
+    </div>
+
+    <button class="btn btn-green" onclick="irResumen()">Ver resumen →</button>
+  </div>
+</div>
+
+<!-- ════════════════════ SCREEN 2: RESUMEN ════════════════════ -->
+<div class="screen" id="sc-resumen">
+  <div class="hdr">
+    <div class="hdr-brand">
+      <div class="hdr-mark">W</div>
+      <div><div class="hdr-title">Resumen del turno</div>
+           <div class="hdr-sub" id="hdr-res-info">—</div></div>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="irProduccion()" style="width:auto">← Volver</button>
+  </div>
+  <div class="body">
+    <div class="card" id="res-turno-card"></div>
+    <div class="card"><div class="card-title">Totales</div><div id="res-totales"></div></div>
+    <div class="card"><div class="card-title">Por producto</div><div id="res-por-prod"></div></div>
+    <div class="card">
+      <div class="card-title">Detalle por bobina</div>
+      <div style="overflow-x:auto"><table class="res-table" id="res-tabla"></table></div>
+    </div>
+    <button class="btn btn-green" onclick="guardarEnStorage()" style="margin-bottom:10px">📡 Guardar en sistema</button>
+    <button class="btn btn-outline" onclick="nuevoTurno()" style="margin-bottom:10px">🔄 Nuevo turno</button>
+    <button class="btn btn-danger" onclick="borrarTodo()">🗑 Borrar todo</button>
+  </div>
+</div>
+
+<script>
+/* ─── PALLETS ─── */
+function cajasXPallet(prod, uxp){
+  return ['F40','F41','F43'].includes(prod) ? (uxp<=600?24:18) : (uxp<=300?24:18);
+}
+function calcPallets(b){ return b.cajas?Math.floor(b.cajas/cajasXPallet(b.prod,b.uxp||900)):0; }
+const OPERARIOS=['Luna Gabriel','Vera Alan','Garbia Luis','Zayas Antonio'];
+
+// Turnos: nombre, hora inicio, hora fin, horas brutas
+const TURNOS={
+  M1:{label:'M1',hIni:'07:00',hFin:'16:00',horas:9},
+  M2:{label:'M2',hIni:'07:00',hFin:'19:00',horas:12},
+  N: {label:'N', hIni:'19:00',hFin:'07:00',horas:12},
+};
+
+// Objetivos en unidades/turno = bocas × 22 golpes × 60 min × horas × 90%
+// F40/F41/F43: 6 bocas | F61/F63: 3 bocas
+const OBJETIVOS={
+  F40:{M1:Math.round(6*22*60*9*0.9),   M2:Math.round(6*22*60*12*0.9),  N:Math.round(6*22*60*12*0.9)},
+  F41:{M1:Math.round(6*22*60*9*0.9),   M2:Math.round(6*22*60*12*0.9),  N:Math.round(6*22*60*12*0.9)},
+  F43:{M1:Math.round(6*22*60*9*0.9),   M2:Math.round(6*22*60*12*0.9),  N:Math.round(6*22*60*12*0.9)},
+  F61:{M1:Math.round(3*22*60*9*0.9),   M2:Math.round(3*22*60*12*0.9),  N:Math.round(3*22*60*12*0.9)},
+  F63:{M1:Math.round(3*22*60*9*0.9),   M2:Math.round(3*22*60*12*0.9),  N:Math.round(3*22*60*12*0.9)},
+};
+// M1: F40=64152 F61=32076 | M2/N: F40=85536 F61=42768
+const PRODS={F40:{uxp:1000},F41:{uxp:1000},F43:{uxp:1000},F61:{uxp:600},F63:{uxp:600}};
+
+/* ─── ESTADO ─── */
+let S={fecha:'',turno:'',hIni:'',hFin:'',operarios:[],prod:'F40',bobinas:[]};
+
+/* ─── INIT ─── */
+function init(){
+  const hoy=new Date();
+  const p=n=>String(n).padStart(2,'0');
+  const iso=`${hoy.getFullYear()}-${p(hoy.getMonth()+1)}-${p(hoy.getDate())}`;
+  document.getElementById('in-fecha').value=iso;
+  document.getElementById('hdr-fecha-hoy').textContent=
+    hoy.toLocaleDateString('es-AR',{weekday:'short',day:'numeric',month:'short'}).toUpperCase();
+
+  const h=hoy.getHours();
+  let turno='M1';
+  if(h>=7&&h<16)       turno='M1';
+  else if(h>=16&&h<19) turno='M2';
+  else                 turno='N';
+  document.getElementById('in-h-ini').value=TURNOS[turno].hIni;
+  document.getElementById('in-h-fin').value=TURNOS[turno].hFin;
+  selTurno(turno);
+  document.getElementById('turno-auto-lbl').textContent=`⚡ Turno ${turno} detectado automáticamente`;
+
+  // Operarios
+  const og=document.getElementById('op-grid');
+  OPERARIOS.forEach(op=>{
+    const b=document.createElement('button');
+    b.className='op-btn';b.textContent=op;b.id='ob-'+op;
+    b.onclick=()=>toggleOp(op,b);og.appendChild(b);
+  });
+
+  // Productos
+  buildProdGrid();
+
+  // Live calc
+  ['in-cini','in-cfin'].forEach(id=>document.getElementById(id).addEventListener('input',calcPreview));
+  document.getElementById('in-uxp').addEventListener('input',calcPreview);
+
+  // Restore
+  try{
+    const saved=localStorage.getItem('wf_clam_v2');
+    if(saved){
+      S=JSON.parse(saved);
+      if(S.bobinas?.length>0) toast('✓ Turno en curso recuperado');
+      document.getElementById('in-fecha').value=S.fecha||iso;
+      if(S.turno)selTurno(S.turno);
+      if(S.hIni)document.getElementById('in-h-ini').value=S.hIni;
+      if(S.hFin)document.getElementById('in-h-fin').value=S.hFin;
+      S.operarios.forEach(op=>{
+        const b=document.getElementById('ob-'+op);
+        if(b)b.classList.add('sel');
+      });
+      renderOpSel();
+      if(S.prod)selProd(S.prod);
+    }
+  }catch(e){}
+}
+
+function save(){localStorage.setItem('wf_clam_v2',JSON.stringify(S));}
+
+/* ─── NAVEGACIÓN ─── */
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');window.scrollTo(0,0);}
+function irInicio(){show('sc-inicio');}
+function irProduccion(){
+  S.fecha=document.getElementById('in-fecha').value;
+  S.hIni=document.getElementById('in-h-ini').value;
+  S.hFin=document.getElementById('in-h-fin').value;
+  if(!S.fecha){toast('⚠ Seleccioná una fecha','warn');return;}
+  if(!S.turno){toast('⚠ Seleccioná el turno','warn');return;}
+  if(S.operarios.length===0){toast('⚠ Seleccioná al menos un operario','warn');return;}
+  save();
+  document.getElementById('hdr-turno-info').textContent=
+    `${fmt(S.fecha)} · ${S.turno} · ${S.operarios.join(', ')}`;
+  actualizarHintCini();
+  renderBobList();renderTotals();
+  show('sc-prod');
+}
+function irResumen(){
+  if(S.bobinas.length===0){toast('⚠ No hay bobinas cargadas','warn');return;}
+  renderResumen();show('sc-resumen');
+}
+
+/* ─── TURNO / OP / PROD ─── */
+function selTurno(t){
+  S.turno=t;
+  document.querySelectorAll('.turno-btn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('tb-'+t)?.classList.add('sel');
+  // Auto-set horarios del turno
+  if(TURNOS[t]){
+    document.getElementById('in-h-ini').value=TURNOS[t].hIni;
+    document.getElementById('in-h-fin').value=TURNOS[t].hFin;
+  }
+}
+function toggleOp(op,btn){
+  const i=S.operarios.indexOf(op);
+  if(i===-1){S.operarios.push(op);btn.classList.add('sel');}
+  else{S.operarios.splice(i,1);btn.classList.remove('sel');}
+  renderOpSel();save();
+}
+function renderOpSel(){
+  document.getElementById('op-sel-wrap').innerHTML=
+    S.operarios.map(op=>`<span class="badge badge-blue" style="margin:3px">${op}</span>`).join('');
+}
+function buildProdGrid(){
+  const pg=document.getElementById('prod-grid');
+  if(!pg)return;pg.innerHTML='';
+  Object.keys(PRODS).forEach(k=>{
+    const b=document.createElement('button');
+    b.className='prod-btn'+(k===S.prod?' sel':'');
+    b.id='pb-'+k;b.textContent=k;b.onclick=()=>selProd(k);
+    pg.appendChild(b);
+  });
+}
+function selProd(k){
+  S.prod=k;
+  document.querySelectorAll('.prod-btn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('pb-'+k)?.classList.add('sel');
+  document.getElementById('in-uxp').value=PRODS[k].uxp;
+  document.getElementById('hint-uxp').textContent=`Default ${k}: ${PRODS[k].uxp} u/pallet`;
+  calcPreview();
+}
+
+/* ─── HINT CAJA INICIO ─── */
+function actualizarHintCini(){
+  const hint=document.getElementById('hint-cini');
+  if(!hint)return;
+  if(S.bobinas.length===0){
+    hint.textContent='Primera bobina del turno';
+    hint.className='hint';
+    // No auto-fill: puede haber cajas de días anteriores
+  } else {
+    const ult=S.bobinas[S.bobinas.length-1];
+    const sig=ult.cfin+1;
+    hint.textContent=`Continúa desde ${sig} (bobina anterior terminó en ${ult.cfin})`;
+    hint.className='hint ok';
+    document.getElementById('in-cini').value=sig;
+  }
+  calcPreview();
+}
+
+/* ─── PREVIEW CAJAS ─── */
+function calcPreview(){
+  const cini=parseInt(document.getElementById('in-cini').value)||0;
+  const cfin=parseInt(document.getElementById('in-cfin').value)||0;
+  const uxp =parseInt(document.getElementById('in-uxp').value)||1;
+  const hFin=document.getElementById('hint-cfin');
+  const pBox=document.getElementById('preview-cajas');
+
+  if(cfin>0&&cini>0){
+    if(cfin<cini){
+      hFin.textContent='⚠ Caja fin menor a caja inicio';hFin.className='hint warn';
+      pBox.style.display='none';return;
+    }
+    const cajas=cfin-cini+1;
+    hFin.textContent='';hFin.className='hint';
+    pBox.style.display='flex';
+    document.getElementById('preview-cajas-val').textContent=
+      `${cajas} cajas · ${(cajas*uxp).toLocaleString('es-AR')} uds`;
+  } else {
+    hFin.textContent='';pBox.style.display='none';
+  }
+}
+
+/* ─── AGREGAR BOBINA ─── */
+function agregarBobina(){
+  const prod   =S.prod;
+  const nbob   =document.getElementById('in-nbob').value.trim();
+  const partida=document.getElementById('in-partida').value.trim();
+  const kg     =parseFloat(document.getElementById('in-kg').value)||0;
+  const metros =parseFloat(document.getElementById('in-metros').value)||0;
+  const cini   =parseInt(document.getElementById('in-cini').value)||0;
+  const cfin   =parseInt(document.getElementById('in-cfin').value)||0;
+  const uxp    =parseInt(document.getElementById('in-uxp').value)||1;
+  const obs    =document.getElementById('in-obs').value.trim();
+
+  if(!nbob)        {toast('⚠ Ingresá el N° de bobina','warn');return;}
+  if(kg===0)       {toast('⚠ Ingresá los kg de la bobina','warn');return;}
+  if(metros===0)   {toast('⚠ Ingresá los metros de la bobina','warn');return;}
+  if(cini===0)     {toast('⚠ Ingresá la caja inicio','warn');return;}
+  if(cfin===0)     {toast('⚠ Ingresá la caja fin','warn');return;}
+  if(cfin<cini)    {toast('⚠ Caja fin no puede ser menor a caja inicio','warn');return;}
+
+  // Validar continuidad
+  if(S.bobinas.length>0){
+    const ult=S.bobinas[S.bobinas.length-1];
+    const esperada=ult.cfin+1;
+    if(cini!==esperada){
+      if(!confirm(`La caja inicio (${cini}) no continúa desde la bobina anterior (terminó en ${ult.cfin}, se esperaba ${esperada}).\n¿Confirmar igual?`))return;
+    }
+  }
+
+  const cajas=cfin-cini+1;
+  const uds=cajas*uxp;
+  const ts=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+  S.bobinas.push({
+    id:Date.now(),prod,nbob,partida,kg,metros,
+    cini,cfin,cajas,uds,uxp,obs,ts,
+    fecha:S.fecha,turno:S.turno,operarios:[...S.operarios],
+  });
+  save();renderBobList();renderTotals();
+
+  // Reset
+  ['in-nbob','in-partida','in-kg','in-metros','in-cfin','in-obs'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('preview-cajas').style.display='none';
+  actualizarHintCini();
+  toast('✓ Bobina agregada');
+}
+
+function elimBobina(id){
+  S.bobinas=S.bobinas.filter(b=>b.id!==id);
+  save();renderBobList();renderTotals();actualizarHintCini();
+}
+
+/* ─── RENDER LISTA ─── */
+function renderBobList(){
+  const el=document.getElementById('bob-list');
+  if(S.bobinas.length===0){
+    el.innerHTML='<div class="empty"><div class="empty-icon">🧵</div><p style="font-size:13px">Todavía no hay bobinas</p></div>';return;
+  }
+  el.innerHTML=[...S.bobinas].reverse().map((b,i)=>{
+    const n=S.bobinas.length-i;
+    return`<div class="bob-item">
+      <div class="bob-num">#${n}</div>
+      <div class="bob-body">
+        <div class="bob-top">
+          <span class="bob-prod">${b.prod}</span>
+          <span class="bob-sub">Bob. ${b.nbob}</span>
+          ${b.partida?`<span class="bob-sub">Part. ${b.partida}</span>`:''}
+          <span style="font-size:10px;color:var(--text3);margin-left:auto">${b.ts}</span>
+        </div>
+        <div class="bob-stats">
+          <div class="bob-stat">Cajas <strong>${b.cini}→${b.cfin}</strong> <span style="color:var(--green);font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:14px">(${b.cajas})</span></div>
+          <div class="bob-stat">Uds <strong>${b.uds.toLocaleString('es-AR')}</strong></div>
+          <div class="bob-stat">Kg <strong>${b.kg}</strong></div>
+          <div class="bob-stat">${b.metros} m</div>
+        </div>
+        ${b.obs?`<div style="font-size:11px;color:var(--yellow);margin-top:4px">📝 ${b.obs}</div>`:''}
+      </div>
+      <button class="bob-del" onclick="elimBobina(${b.id})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function renderTotals(){
+  const totC=S.bobinas.reduce((s,b)=>s+b.cajas,0);
+  const totU=S.bobinas.reduce((s,b)=>s+b.uds,0);
+  const totP=S.bobinas.reduce((s,b)=>s+calcPallets(b),0);
+  document.getElementById('tot-bob').textContent=S.bobinas.length;
+  document.getElementById('tot-cajas').textContent=totC.toLocaleString('es-AR');
+  document.getElementById('tot-pallets').textContent=totP.toLocaleString('es-AR');
+  document.getElementById('tot-uds').textContent=totU.toLocaleString('es-AR');
+
+  // Eficiencia: calcular por producto dominante del turno
+  if(S.bobinas.length>0 && S.turno){
+    // Agrupar uds por producto
+    const byP={};
+    S.bobinas.forEach(b=>{
+      byP[b.prod]=(byP[b.prod]||0)+b.uds;
+    });
+    // Producto con más unidades
+    const prodDom=Object.entries(byP).sort((a,b)=>b[1]-a[1])[0][0];
+    const udsActual=byP[prodDom]||0;
+    const obj=OBJETIVOS[prodDom]?.[S.turno]||0;
+
+    if(obj>0){
+      const pct=Math.min(udsActual/obj,1.5); // cap en 150%
+      const pctDisp=Math.round(udsActual/obj*100);
+      const bar=document.getElementById('efic-bar');
+      bar.style.display='block';
+      document.getElementById('efic-pct').textContent=pctDisp+'%';
+      document.getElementById('efic-pct').style.color=
+        pctDisp>=100?'var(--green)':pctDisp>=80?'var(--yellow)':'var(--red)';
+      const fill=document.getElementById('efic-fill');
+      fill.style.width=Math.min(pct*100,100)+'%';
+      fill.style.background=pctDisp>=100?'var(--green)':pctDisp>=80?'var(--yellow)':'var(--red)';
+      document.getElementById('efic-prod-lbl').textContent=
+        `${prodDom} · ${udsActual.toLocaleString('es-AR')} uds producidas`;
+      document.getElementById('efic-obj-lbl').textContent=
+        `Obj ${S.turno}: ${obj.toLocaleString('es-AR')}`;
+    }
+  }
+}
+
+/* ─── RESUMEN ─── */
+function renderResumen(){
+  document.getElementById('hdr-res-info').textContent=`${fmt(S.fecha)} · ${S.turno}`;
+  // Turno card
+  document.getElementById('res-turno-card').innerHTML=`
+    <div class="card-title">Información del turno</div>
+    <div class="g2">
+      <div><div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Fecha</div><div class="mono" style="font-size:15px">${fmt(S.fecha)}</div></div>
+      <div><div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Turno</div><div style="font-size:15px;font-weight:600">${S.turno}</div></div>
+      <div><div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Horario</div><div class="mono" style="font-size:14px">${S.hIni} – ${S.hFin}</div></div>
+      <div><div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Operarios</div><div style="font-size:12px">${S.operarios.join(', ')}</div></div>
+    </div>`;
+
+  // Totales
+  const totC=S.bobinas.reduce((s,b)=>s+b.cajas,0);
+  const totU=S.bobinas.reduce((s,b)=>s+b.uds,0);
+  const totKg=S.bobinas.reduce((s,b)=>s+b.kg,0);
+  const totM=S.bobinas.reduce((s,b)=>s+b.metros,0);
+  const totP=S.bobinas.reduce((s,b)=>s+calcPallets(b),0);
+  document.getElementById('res-totales').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    ${[['Bobinas',S.bobinas.length,''],['Cajas',totC.toLocaleString('es-AR'),'var(--green)'],
+       ['Pallets',totP.toLocaleString('es-AR'),'var(--blue)'],['Unidades',totU.toLocaleString('es-AR'),''],
+       ['Kg PET',totKg.toFixed(1),''],['Metros',totM.toLocaleString('es-AR'),'']].map(([l,v,c])=>
+    `<div style="background:var(--surf2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;text-align:center">
+      <div class="mono" style="font-size:20px;font-weight:700;color:${c||'var(--text)'}">${v}</div>
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-top:3px">${l}</div>
+    </div>`).join('')}</div>`;
+
+  // Por producto con eficiencia
+  const byP={};
+  S.bobinas.forEach(b=>{
+    if(!byP[b.prod])byP[b.prod]={cajas:0,uds:0,kg:0,bob:0};
+    byP[b.prod].cajas+=b.cajas;byP[b.prod].uds+=b.uds;byP[b.prod].kg+=b.kg;byP[b.prod].bob++;
+  });
+  const totCajas=totC;
+  document.getElementById('res-por-prod').innerHTML=
+    Object.entries(byP).map(([p,v])=>{
+      const obj=OBJETIVOS[p]?.[S.turno]||0;
+      const pct=obj>0?Math.round(v.uds/obj*100):null;
+      const color=pct===null?'var(--text2)':pct>=100?'var(--green)':pct>=80?'var(--yellow)':'var(--red)';
+      const barW=pct===null?0:Math.min(pct,100);
+      return`<div style="padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div>
+            <span class="mono" style="font-size:16px;font-weight:700;color:var(--blue)">${p}</span>
+            <span style="font-size:12px;color:var(--text2);margin-left:8px">${v.bob} bob.</span>
+          </div>
+          <div style="text-align:right">
+            <div class="mono" style="font-weight:600;color:var(--green)">${v.cajas.toLocaleString('es-AR')} cajas</div>
+            <div class="mono" style="font-size:12px;color:var(--text2)">${v.uds.toLocaleString('es-AR')} uds · ${v.kg.toFixed(1)} kg</div>
+          </div>
+        </div>
+        ${obj>0?`<div style="display:flex;align-items:center;gap:10px">
+          <div style="flex:1;background:var(--surf2);border-radius:4px;height:6px;overflow:hidden">
+            <div style="height:100%;border-radius:4px;background:${color};width:${barW}%"></div>
+          </div>
+          <span class="mono" style="font-size:13px;font-weight:700;color:${color};min-width:42px;text-align:right">${pct}%</span>
+          <span style="font-size:11px;color:var(--text3)">/ ${obj.toLocaleString('es-AR')}</span>
+        </div>`:''}
+      </div>`;}).join('')+
+    `<div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:700">
+      <span style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text2)">TOTAL</span>
+      <span class="mono" style="color:var(--green);font-size:16px">${totCajas.toLocaleString('es-AR')} cajas · ${totU.toLocaleString('es-AR')} uds</span>
+    </div>`;
+
+  // Tabla detalle
+  document.getElementById('res-tabla').innerHTML=`
+    <thead><tr>
+      <th>#</th><th>Prod</th><th>N°Bob</th><th>Partida</th>
+      <th>Kg</th><th>Mts</th><th>C.Ini</th><th>C.Fin</th>
+      <th>Cajas</th><th>Uds</th><th>U×Plt</th><th>Hora</th>
+    </tr></thead>
+    <tbody>${S.bobinas.map((b,i)=>`<tr>
+      <td style="color:var(--text3)">${i+1}</td>
+      <td><strong class="mono" style="color:var(--blue)">${b.prod}</strong></td>
+      <td class="mono">${b.nbob}</td>
+      <td class="mono" style="color:var(--text2)">${b.partida||'—'}</td>
+      <td class="mono">${b.kg}</td>
+      <td class="mono">${b.metros}</td>
+      <td class="mono">${b.cini}</td>
+      <td class="mono">${b.cfin}</td>
+      <td class="mono" style="font-weight:700;color:var(--green)">${b.cajas}</td>
+      <td class="mono">${b.uds.toLocaleString('es-AR')}</td>
+      <td class="mono" style="color:var(--text2)">${b.uxp}</td>
+      <td style="font-size:11px;color:var(--text2)">${b.ts}</td>
+    </tr>`).join('')}</tbody>`;
+}
+
+/* ─── EXPORT CSV ─── */
+// ── JSONbin config para tablet ──
+function getTabletCfg(){
+  return {
+    apiKey: localStorage.getItem('wf_clam_apikey')||'',
+    binId:  localStorage.getItem('wf_clam_binid')||''
+  };
+}
+
+async function guardarEnStorage(){
+  if(S.bobinas.length===0){toast('⚠ No hay bobinas para guardar','warn');return;}
+
+  const cfg=getTabletCfg();
+  if(!cfg.apiKey){
+    const k=prompt('Ingresá la API Key de JSONbin para guardar los datos:');
+    if(!k){toast('⚠ Necesitás la API Key para guardar','warn');return;}
+    localStorage.setItem('wf_clam_apikey',k.trim());
+    cfg.apiKey=k.trim();
+  }
+
+  const btn=document.querySelector('[onclick="guardarEnStorage()"]');
+  if(btn){btn.textContent='⏳ Guardando...';btn.disabled=true;}
+
+  try{
+    // Leer bobinas existentes de JSONbin
+    let existing=[];
+    if(cfg.binId){
+      try{
+        const res=await fetch(`https://api.jsonbin.io/v3/b/${cfg.binId}/latest`,{
+          headers:{'X-Master-Key':cfg.apiKey}
+        });
+        if(res.ok){
+          const data=await res.json();
+          existing=data.record?.bobinas||[];
+        }
+      }catch(e){}
+    }
+
+    // Nuevas bobinas con IDs únicos
+    const nuevas=S.bobinas.map(b=>({
+      ...b,
+      id:b.id||Date.now()+'_'+Math.random().toString(36).slice(2,6),
+    }));
+    const payload={
+      bobinas:[...existing,...nuevas],
+      pedidos:[],
+      stockConfig:{}
+    };
+
+    // Guardar en JSONbin
+    let res;
+    if(!cfg.binId){
+      res=await fetch('https://api.jsonbin.io/v3/b',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-Master-Key':cfg.apiKey,'X-Bin-Name':'winflex-clamshells','X-Bin-Private':'true'},
+        body:JSON.stringify(payload)
+      });
+      const d=await res.json();
+      localStorage.setItem('wf_clam_binid',d.metadata.id);
+    } else {
+      // Preservar pedidos y stockConfig existentes
+      try{
+        const r=await fetch(`https://api.jsonbin.io/v3/b/${cfg.binId}/latest`,{headers:{'X-Master-Key':cfg.apiKey}});
+        if(r.ok){const d=await r.json();payload.pedidos=d.record?.pedidos||[];payload.stockConfig=d.record?.stockConfig||{};}
+      }catch(e){}
+      payload.bobinas=[...existing,...nuevas];
+      res=await fetch(`https://api.jsonbin.io/v3/b/${cfg.binId}`,{
+        method:'PUT',
+        headers:{'Content-Type':'application/json','X-Master-Key':cfg.apiKey},
+        body:JSON.stringify(payload)
+      });
+    }
+
+    if(!res.ok) throw new Error('Error '+res.status);
+
+    toast(`✓ ${nuevas.length} bobinas guardadas en el sistema`);
+    S._guardado=true; save();
+    if(btn){btn.textContent='✅ Guardado — Nuevo turno';btn.disabled=false;btn.onclick=nuevoTurno;}
+  }catch(e){
+    toast('❌ Error al guardar. Verificá la conexión.','err');
+    if(btn){btn.textContent='📡 Guardar en sistema';btn.disabled=false;}
+    console.error(e);
+  }
+}
+
+/* ─── HELPERS ─── */
+function adj(id,d){const el=document.getElementById(id);el.value=Math.max(1,(parseInt(el.value)||0)+d);el.dispatchEvent(new Event('input'));}
+function fmt(iso){if(!iso)return'—';const[y,m,d]=iso.split('-');const M=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];return`${d}/${M[parseInt(m)-1]}/${y}`;}
+function nuevoTurno(){if(!confirm('¿Iniciar nuevo turno? Se borrará el turno actual.'))return;
+  S={fecha:'',turno:'',hIni:'',hFin:'',operarios:[],prod:'F40',bobinas:[]};save();
+  document.querySelectorAll('.op-btn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('op-sel-wrap').innerHTML='';show('sc-inicio');}
+function borrarTodo(){if(!confirm('¿Borrar TODO? No se puede deshacer.'))return;
+  S={fecha:'',turno:'',hIni:'',hFin:'',operarios:[],prod:'F40',bobinas:[]};
+  localStorage.removeItem('wf_clam_v2');
+  document.querySelectorAll('.op-btn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('op-sel-wrap').innerHTML='';show('sc-inicio');toast('✓ Datos borrados');}
+let _tt;
+function toast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;
+  t.className='toast on'+(type?' '+type:'');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('on'),2400);}
+
+init();
+</script>
+</body>
+</html>
